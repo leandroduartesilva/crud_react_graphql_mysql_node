@@ -1,13 +1,13 @@
 import express from 'express'
 import { graphqlHTTP } from 'express-graphql'
 import cors from 'cors'
-import { createConnection } from 'typeorm'
-import { schema } from './Schema/indes'
+import { DataSource } from 'typeorm'
+import { schema } from './Schema'
 import { Users } from './Entities/Users'
 
 const main = async () => {
 
-    await createConnection({
+    const AppDataSource = new DataSource({
         type: 'mysql',
         database: 'GraphqlCRUD',
         host: 'localhost',
@@ -19,7 +19,15 @@ const main = async () => {
         entities: [Users]
     })
 
-    const app= express()
+    AppDataSource.initialize()
+        .then(() => {
+            console.log('Database connected')
+        })
+        .catch((err) => {
+            console.log(err)
+        })
+
+    const app = express()
     app.use(cors())
     app.use(express.json())
     app.use("/graphql", graphqlHTTP({
